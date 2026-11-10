@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fast money, slow money: the Delta states and Texas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+
+.rhtp{--bg:#ffffff;--ink:#121212;--ink2:#4a4f57;--ink3:#767c86;--rule:#e2e4e8;--soft:#f3f4f6;--accent:#1f62a8;--accent-soft:#9db9da;
+  --rep:#c8473d;--dem:#2f6fb5;--gain:#1f62a8;--loss:#c2540a;--tip-bg:#ffffff;--tip-shadow:0 6px 24px rgba(15,23,42,.14);--nodata:#e9ebee;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;--sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.rhtp[data-theme="dark"]{--bg:#141516;--ink:#f1f2f3;--ink2:#b4b9c1;--ink3:#8a909a;--rule:#2c2f33;--soft:#1f2124;--accent:#6aa9ea;--accent-soft:#3f5f85;
+  --rep:#e5756b;--dem:#62a3e6;--gain:#6aa9ea;--loss:#e8935a;--tip-bg:#202327;--tip-shadow:0 6px 24px rgba(0,0,0,.5);--nodata:#26292d}
+html,body{margin:0;background:transparent}
+.rhtp{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.4;max-width:980px;margin:0 auto;padding:22px 22px 16px;box-sizing:border-box;position:relative;-webkit-font-smoothing:antialiased}
+.rhtp *{box-sizing:border-box}
+.rhtp-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.rhtp h1{font-family:var(--serif);font-weight:700;font-size:26px;line-height:1.15;margin:0 0 6px;letter-spacing:-.2px}
+.rhtp .dek{color:var(--ink2);font-size:15px;margin:0;max-width:680px}
+.rhtp .theme{font:inherit;font-size:12px;color:var(--ink2);background:none;border:1px solid var(--rule);border-radius:999px;padding:5px 12px;cursor:pointer;white-space:nowrap}
+.rhtp .theme:hover{color:var(--ink);border-color:var(--ink3)}
+.rhtp-tabs{display:flex;gap:26px;border-bottom:1px solid var(--rule);margin-top:18px}
+.rhtp-tabs button{font:inherit;font-size:14px;font-weight:600;color:var(--ink3);background:none;border:0;border-bottom:2px solid transparent;padding:10px 0 9px;margin-bottom:-1px;cursor:pointer}
+.rhtp-tabs button:hover{color:var(--ink)}
+.rhtp-tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.rhtp-controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 22px;padding:14px 0 6px}
+.rhtp-controls label{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--ink3)}
+.rhtp select{font:inherit;font-size:14px;text-transform:none;letter-spacing:0;font-weight:500;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:6px;padding:7px 30px 7px 10px;appearance:none;-webkit-appearance:none;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,var(--ink3) 50%),linear-gradient(135deg,var(--ink3) 50%,transparent 50%);background-position:calc(100% - 15px) 55%,calc(100% - 10px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+.rhtp .seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.rhtp .seg button{font:inherit;font-size:13px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--ink2);background:var(--bg);border:0;border-left:1px solid var(--rule);padding:7px 12px;cursor:pointer}
+.rhtp .seg button:first-child{border-left:0}
+.rhtp .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.rhtp .takeaway{font-family:var(--serif);font-weight:600;font-size:18px;line-height:1.3;margin:12px 0 2px}
+.rhtp .note{color:var(--ink2);font-size:13px;margin:0 0 8px;min-height:18px}
+.rhtp .stage{position:relative}
+.rhtp svg{display:block;width:100%;height:auto;overflow:visible}
+.rhtp svg text{font-family:var(--sans);fill:var(--ink2);font-size:12px}
+.rhtp .barwrap{max-height:520px;overflow-y:auto;padding-right:4px}
+.rhtp .legend{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink2);margin:2px 0 6px;flex-wrap:wrap}
+.rhtp .legend .ramp{display:flex;height:10px;width:200px;border-radius:2px;overflow:hidden}
+.rhtp .legend .ramp i{flex:1}
+.rhtp .legend .key{display:inline-flex;align-items:center;gap:6px;margin-right:8px}
+.rhtp .legend .key b{width:10px;height:10px;border-radius:50%;display:inline-block}
+.rhtp .tip{position:absolute;pointer-events:none;background:var(--tip-bg);color:var(--ink);border:1px solid var(--rule);border-radius:8px;box-shadow:var(--tip-shadow);padding:11px 13px 10px;min-width:190px;max-width:260px;opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s;z-index:5}
+.rhtp .tip.on{opacity:1;transform:none}
+.rhtp .tip h3{font-family:var(--serif);font-weight:700;font-size:16px;margin:0 0 1px}
+.rhtp .tip .sub{font-size:12px;color:var(--ink3);margin-bottom:8px}
+.rhtp .tip .big{font-size:22px;font-weight:700;letter-spacing:-.3px;line-height:1.1}
+.rhtp .tip .biglab{font-size:12px;color:var(--ink2);margin-bottom:8px}
+.rhtp .tip dl{display:grid;grid-template-columns:1fr auto;gap:3px 14px;margin:0;padding-top:8px;border-top:1px solid var(--rule);font-size:12.5px}
+.rhtp .tip dt{color:var(--ink2)}
+.rhtp .tip dd{margin:0;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.rhtp .src{border-top:1px solid var(--rule);margin-top:12px;padding-top:9px;font-size:11.5px;color:var(--ink3);line-height:1.5}
+.rhtp .state{stroke:var(--bg);stroke-width:1;cursor:pointer;transition:opacity .15s}
+.rhtp .state.dim{opacity:.18}
+.rhtp .state.hot{stroke:var(--ink);stroke-width:1.6}
+.rhtp .dot{stroke:var(--bg);stroke-width:1.2;transition:r .1s}
+.rhtp .bar{cursor:pointer}
+.rhtp .barrow.hot rect.bar{opacity:.78}
+.rhtp .barrow.hot text.nm{fill:var(--ink);font-weight:600}
+.rhtp :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:560px){.rhtp{padding:16px 14px 12px}.rhtp h1{font-size:21px}.rhtp-tabs{gap:18px}.rhtp .takeaway{font-size:16px}}
+
+.rhtp{--c1:#2a78d6;--c2:#eb6834;--c3:#1baf7a;--c4:#eda100;--c5:#e87ba4;--c6:#6250d6;--cadmin:#9aa1ab;--cnone:#eceef1;--hl:#1f62a8;--other:#c5cad2}
+.rhtp[data-theme="dark"]{--c1:#3987e5;--c2:#d95926;--c3:#199e70;--c4:#c98500;--c5:#d55181;--c6:#9085e9;--cadmin:#6f7781;--cnone:#24272b;--hl:#6aa9ea;--other:#3a3f46}
+.rhtp .legend .key b.sq{border-radius:2px}
+.rhtp table.pol{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:4px}
+.rhtp table.pol th{font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--ink3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--ink3)}
+.rhtp table.pol th.st{font-family:var(--serif);font-size:15px;letter-spacing:0;text-transform:none;color:var(--ink)}
+.rhtp table.pol th.st small{display:block;font-family:var(--sans);font-size:11.5px;font-weight:600;margin-top:2px}
+.rhtp table.pol td{padding:9px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+.rhtp table.pol td.row{font-weight:600;color:var(--ink);width:24%}
+.rhtp table.pol td.row small{display:block;font-weight:400;color:var(--ink3);font-size:11.5px;margin-top:2px}
+.rhtp .chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;cursor:default;border-radius:4px;padding:2px 0}
+.rhtp .chip i{width:11px;height:11px;border-radius:50%;display:inline-block;border:2px solid var(--ink3);background:transparent;flex-shrink:0}
+.rhtp .chip.inplace i{background:var(--hl);border-color:var(--hl)}
+.rhtp .chip.acted i{background:linear-gradient(90deg,var(--hl) 50%,transparent 50%);border-color:var(--hl)}
+.rhtp .chip.committed i{border-color:var(--hl)}
+.rhtp .chip.none{color:var(--ink3);font-weight:500}
+.rhtp .chip.none i{border-style:dotted}
+.rhtp table.pol tr.dim td{opacity:.28}
+.rhtp .gain{color:var(--gain)}.rhtp .loss{color:var(--loss)}
+@media (max-width:640px){.rhtp table.pol{font-size:12px}.rhtp table.pol td,.rhtp table.pol th{padding:7px 5px}.rhtp .chip span{display:none}.rhtp .chip i{width:13px;height:13px}}
+</style>
+</head>
+<body>
+<div class="rhtp" id="rhtp" data-theme="light">
+  <div class="rhtp-head">
+    <div>
+      <h1>Fast money, slow money: the Delta states and Texas</h1>
+      <p class="dek">Arkansas, Louisiana, Mississippi and Texas each receive more than $200 million a year from the Rural Health Transformation Program. They put it to work at very different speeds, and the fastest of them lost ground in Year 2.</p>
+    </div>
+    <button class="theme" id="themeBtn" type="button" aria-label="Switch color theme">Dark</button>
+  </div>
+  <div class="rhtp-tabs" role="tablist">
+    <button role="tab" data-tab="paradox" aria-selected="true" type="button">The paradox</button>
+    <button role="tab" data-tab="mix" aria-selected="false" type="button">Where it went</button>
+    <button role="tab" data-tab="scatter" aria-selected="false" type="button">Against all 50</button>
+    <button role="tab" data-tab="policy" aria-selected="false" type="button">Policy promises</button>
+    <button role="tab" data-tab="time" aria-selected="false" type="button">Timeline</button>
+  </div>
+  <div class="rhtp-controls" id="controls"></div>
+  <div class="takeaway" id="takeaway"></div>
+  <p class="note" id="note"></p>
+  <div class="legend" id="legend"></div>
+  <div class="stage" id="stage"><div class="tip" id="tip" role="status"></div></div>
+  <div class="src" id="src"></div>
+</div>
+<script>
+(function(){
+"use strict";
+var ALL=[{"a":"AL","n":"Alabama","ob":2.7,"y1":203.4,"y2":199.28},{"a":"AK","n":"Alaska","ob":4.2,"y1":272.17,"y2":272.65},{"a":"AZ","n":"Arizona","ob":43.7,"y1":166.99,"y2":165.01},{"a":"AR","n":"Arkansas","ob":2.9,"y1":208.78,"y2":207.79},{"a":"CA","n":"California","ob":93.8,"y1":233.64,"y2":231.11},{"a":"CO","n":"Colorado","ob":9.4,"y1":200.11,"y2":197.16},{"a":"CT","n":"Connecticut","ob":98.4,"y1":154.25,"y2":153.65},{"a":"DE","n":"Delaware","ob":48.8,"y1":157.39,"y2":160.29},{"a":"FL","n":"Florida","ob":0.9,"y1":209.94,"y2":203.83},{"a":"GA","n":"Georgia","ob":100.0,"y1":218.86,"y2":221.73},{"a":"HI","n":"Hawaii","ob":100.0,"y1":188.89,"y2":189.62},{"a":"ID","n":"Idaho","ob":0.2,"y1":185.97,"y2":182.7},{"a":"IL","n":"Illinois","ob":85.4,"y1":193.42,"y2":190.46},{"a":"IN","n":"Indiana","ob":97.9,"y1":206.93,"y2":208.91},{"a":"IA","n":"Iowa","ob":91.7,"y1":209.04,"y2":216.01},{"a":"KS","n":"Kansas","ob":57.2,"y1":221.9,"y2":225.9},{"a":"KY","n":"Kentucky","ob":46.2,"y1":212.91,"y2":211.33},{"a":"LA","n":"Louisiana","ob":9.2,"y1":208.37,"y2":211.86},{"a":"ME","n":"Maine","ob":27.4,"y1":190.01,"y2":190.36},{"a":"MD","n":"Maryland","ob":99.4,"y1":168.18,"y2":168.41},{"a":"MA","n":"Massachusetts","ob":46.1,"y1":162.01,"y2":158.39},{"a":"MI","n":"Michigan","ob":7.7,"y1":173.13,"y2":170.61},{"a":"MN","n":"Minnesota","ob":10.8,"y1":193.09,"y2":190.83},{"a":"MS","n":"Mississippi","ob":45.9,"y1":205.91,"y2":204.68},{"a":"MO","n":"Missouri","ob":49.2,"y1":216.28,"y2":218.55},{"a":"MT","n":"Montana","ob":17.9,"y1":233.51,"y2":239.74},{"a":"NE","n":"Nebraska","ob":58.6,"y1":218.53,"y2":219.25},{"a":"NV","n":"Nevada","ob":1.3,"y1":179.93,"y2":182.4},{"a":"NH","n":"New Hampshire","ob":100.0,"y1":204.02,"y2":204.31},{"a":"NJ","n":"New Jersey","ob":53.8,"y1":147.25,"y2":142.34},{"a":"NM","n":"New Mexico","ob":0.4,"y1":211.48,"y2":211.04},{"a":"NY","n":"New York","ob":0.0,"y1":212.06,"y2":207.75},{"a":"NC","n":"North Carolina","ob":78.7,"y1":213.01,"y2":216.82},{"a":"ND","n":"North Dakota","ob":5.7,"y1":198.94,"y2":206.38},{"a":"OH","n":"Ohio","ob":13.1,"y1":202.03,"y2":201.93},{"a":"OK","n":"Oklahoma","ob":62.8,"y1":223.48,"y2":227.1},{"a":"OR","n":"Oregon","ob":52.1,"y1":197.27,"y2":197.25},{"a":"PA","n":"Pennsylvania","ob":63.7,"y1":193.29,"y2":190.73},{"a":"RI","n":"Rhode Island","ob":73.1,"y1":156.17,"y2":158.17},{"a":"SC","n":"South Carolina","ob":13.2,"y1":200.03,"y2":195.99},{"a":"SD","n":"South Dakota","ob":6.4,"y1":189.48,"y2":187.65},{"a":"TN","n":"Tennessee","ob":15.1,"y1":206.89,"y2":210.34},{"a":"TX","n":"Texas","ob":18.9,"y1":281.32,"y2":281.98},{"a":"UT","n":"Utah","ob":38.3,"y1":195.74,"y2":191.92},{"a":"VT","n":"Vermont","ob":14.5,"y1":195.05,"y2":190.0},{"a":"VA","n":"Virginia","ob":66.8,"y1":189.54,"y2":195.71},{"a":"WA","n":"Washington","ob":67.7,"y1":181.26,"y2":177.06},{"a":"WV","n":"West Virginia","ob":0.0,"y1":199.48,"y2":202.08},{"a":"WI","n":"Wisconsin","ob":37.0,"y1":203.67,"y2":203.7},{"a":"WY","n":"Wyoming","ob":0.9,"y1":205.0,"y2":207.23}];
+var root=document.getElementById('rhtp'),stage=document.getElementById('stage'),tip=document.getElementById('tip');
+var NS='http://www.w3.org/2000/svg';
+/* ---------- regional data (CMS Obligated Funds Report, as of Jul 31, 2026; CMS award releases) ---------- */
+var F=[
+ {a:'MS',n:'Mississippi',y1:205.907,y2:204.677,put:94.423,style:'Fast grants',
+  mix:{tech:53.2,fac:28.5,admin:12.723},
+  detail:{tech:'Rural Provider Technology Grant program ($47.5M) and telehealth grants ($5.7M)',fac:'Rural Capital Care Gap Closure Grant Program',admin:'Grant management contract ($10.0M), rural health and EMS assessments ($2.65M), staff'}},
+ {a:'TX',n:'Texas',y1:281.319,y2:281.976,put:53.289,style:'Early big-ticket buys',
+  mix:{prev:24.75,fac:20.0,work:2.389,admin:6.150},
+  detail:{prev:'Community prevention, wellness and nutrition programs run by rural hospital districts',fac:'Mobile intensive care buses for the Texas Emergency Medical Task Force',work:'Community health worker training and certification',admin:'Health and Human Services Commission program costs'}},
+ {a:'LA',n:'Louisiana',y1:208.374,y2:211.858,put:19.165,style:'Build the platform first',
+  mix:{tech:9.586,work:6.068,care:1.674,admin:1.837},
+  detail:{tech:'Health engagement platform ($4.8M), EHR integration ($4.3M), rural health GIS analytics ($0.5M)',work:'Nursing, sonography and radiologic tech program expansion',care:'Technical assistance on alternative payment models',admin:'Program administration'}},
+ {a:'AR',n:'Arkansas',y1:208.779,y2:207.789,put:6.158,style:'All at once, late',
+  mix:{admin:6.158},
+  detail:{admin:'Contractual agreements ($6.0M) and staff. No initiative funding reported by the cutoff'}}
+];
+F.forEach(function(s){s.chg=s.y2-s.y1;s.chgp=100*s.chg/s.y1;s.putp=100*s.put/s.y1;s.scored=100*s.chg/(s.y1-100);});
+var CAT=[['tech','Technology and telehealth','--c1'],['fac','Facilities and equipment','--c2'],['prev','Prevention and wellness','--c3'],['work','Workforce','--c4'],['care','Care and payment models','--c6'],['admin','Administration and contracts','--cadmin']];
+var POL=[
+ {k:'Presidential Fitness Test',w:'Part of a 3.75% factor',c:{TX:['committed','Committed','Governor committed all public schools to reinstate the test'],LA:['committed','Committed','Listed in CMS summary of the state plan'],AR:['committed','Committed','Listed in CMS summary of the state plan'],MS:['acted','Acted in 2026','Committed; state moved to reestablish the test in schools']}},
+ {k:'SNAP food restriction waiver',w:'3.75% of the score',c:{TX:['inplace','In place','Approved waiver cited in the state plan'],LA:['committed','Committed','Listed in CMS summary of the state plan'],AR:['inplace','In place','State plan cites an existing waiver'],MS:['acted','Acted in 2026','Committed; state sought a waiver']}},
+ {k:'Nutrition education for physicians',w:'1.75% of the score',c:{TX:['inplace','In place','Requirement enacted for physicians, PAs and nurses; CMS notes it is already in implementation'],LA:['committed','Committed','Listed in CMS summary of the state plan'],AR:['committed','Committed','Listed in CMS summary of the state plan'],MS:['none','No commitment','Not among the state’s commitments; a bill was introduced in the 2026 session']}},
+ {k:'Licensure compacts',w:'1.75% of the score',c:{TX:['none','Not listed','Not among commitments in CMS summary'],LA:['none','Not listed','Not among commitments in CMS summary'],AR:['committed','Committed','Committed to join the physician compact'],MS:['none','No commitment','Tracker lists no compact commitments']}},
+ {k:'Scope of practice',w:'1.75% of the score',c:{TX:['none','Not listed','Not among commitments in CMS summary'],LA:['none','Not listed','Not among commitments in CMS summary'],AR:['committed','Committed','Committed to expand pharmacist scope of practice'],MS:['none','No commitment','Tracker lists no scope of practice commitments']}},
+ {k:'Certificate of need',w:'1.75% of the score',c:{TX:['none','Not listed','Not among commitments in CMS summary'],LA:['none','Not listed','Not among commitments in CMS summary'],AR:['none','No further action','State plan says no further policy planned'],MS:['acted','Acted in 2026','No commitment in the plan, but a March 2026 law loosens rules for about 55 rural hospitals']}}
+];
+var EV=[
+ {a:'TX',d:'2026-04-07',t:'CMS approves Year 1 budget',x:'$281.3M authorized for the first budget period'},
+ {a:'TX',d:'2026-06-19',t:'First awards scheduled',x:'Earliest notice-of-award date on the state’s published schedule'},
+ {a:'MS',d:'2026-04-20',t:'CMS approves Year 1 budget',x:''},
+ {a:'MS',d:'2026-05-15',t:'First funding notices posted',x:'May 2026; day not confirmed',approx:1},
+ {a:'MS',d:'2026-09-15',t:'$104.1M to 167 grantees announced',x:'September 2026; day not confirmed. Most of this was already counted as put to work by Jul 31',approx:1,big:1},
+ {a:'MS',d:'2026-10-21',t:'$32.6M to about 60 grantees',x:'Workforce and psychiatric emergency services',big:1},
+ {a:'LA',d:'2026-04-07',t:'Rural health office created',x:'Executive order establishes the office and an advisory council'},
+ {a:'LA',d:'2026-05-25',t:'Funding opportunities published',x:'Year 1 application deadlines ran Jul 10 to Aug 14'},
+ {a:'LA',d:'2026-10-08',t:'$37.7M workforce awards',x:'',big:1},
+ {a:'LA',d:'2026-11-09',t:'State reports Year 1 fully awarded',x:'$208M; 551 applications requesting more than $498M',big:1},
+ {a:'AR',d:'2026-08-31',t:'$149.3M awards announced',x:'Telehealth, specialty care and infrastructure',big:1},
+ {a:'AR',d:'2026-09-24',t:'$54.6M awards announced',x:'Completes distribution of the Year 1 award',big:1}
+];
+var st={tab:'paradox',unit:'pct',sort:'pace',mixMode:'share',y:'chgp',hl:'four',polFilter:'all'};
+/* ---------- helpers ---------- */
+function el(tag,attrs,parent){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function h(tag,cls,txt,parent){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;if(parent)parent.appendChild(e);return e;}
+function css(v){return getComputedStyle(root).getPropertyValue(v).trim();}
+function dark(){return root.getAttribute('data-theme')==='dark';}
+function money(v){return '$'+v.toFixed(1)+'M';}
+function sgnM(v){return (v>0?'+':v<0?'−':'')+'$'+Math.abs(v).toFixed(1)+'M';}
+function sgnP(v,d){return (v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(d==null?1:d)+'%';}
+function setText(id,t){document.getElementById(id).textContent=t;}
+function tipAt(evt,build){tip.textContent='';build(tip);var box=stage.getBoundingClientRect(),x=evt.clientX-box.left,y=evt.clientY-box.top;tip.classList.add('on');
+  var tw=tip.offsetWidth,th=tip.offsetHeight,left=x+16,top=y-th/2;if(left+tw>box.width-4)left=x-tw-16;if(left<0)left=4;top=Math.max(0,Math.min(top,Math.max(0,stage.offsetHeight-th)));tip.style.left=left+'px';tip.style.top=top+'px';}
+function hideTip(){tip.classList.remove('on');}
+function stateTip(s,evt,extra){tipAt(evt,function(t){h('h3',null,s.n,t);h('div','sub',s.style,t);
+  h('div','big',sgnM(s.chg),t);h('div','biglab','Change in Year 2 award ('+sgnP(s.chgp)+')',t);
+  var dl=h('dl',null,null,t);(extra||[]).concat([['Year 1 award',money(s.y1)],['Year 2 award',money(s.y2)],['Put to work by Jul 31',money(s.put)+' ('+s.putp.toFixed(0)+'%)']]).forEach(function(p){h('dt',null,p[0],dl);h('dd',null,p[1],dl);});});}
+function seg(label,key,opts){var l=h('label',null,label),g=h('span','seg',null,l);opts.forEach(function(o){var b=h('button',null,o[1],g);b.type='button';b.setAttribute('aria-pressed',st[key]===o[0]);b.addEventListener('click',function(){st[key]=o[0];render();});});return l;}
+function keys(items,sq){var lg=document.getElementById('legend');items.forEach(function(p){var k=h('span','key',null,lg),b=h('b',sq?'sq':null,null,k);b.style.background=css(p[1]);h('span',null,p[0],k);});}
+function focusable(node,fn,off){node.setAttribute('tabindex',0);node.addEventListener('focus',function(){var b=node.getBoundingClientRect();fn({clientX:b.left+b.width/2,clientY:b.top+b.height/2});});node.addEventListener('blur',off);}
+function clearStage(){Array.prototype.slice.call(stage.children).forEach(function(n){if(n!==tip)stage.removeChild(n);});hideTip();document.getElementById('legend').textContent='';}
+/* ---------- 1. paradox ---------- */
+function drawParadox(){
+  var c=document.getElementById('controls');c.appendChild(seg('Order by','sort',[['pace','Spending pace'],['change','Year 2 change']]));c.appendChild(seg('Units','unit',[['pct','Percent'],['usd','Dollars']]));
+  var rows=F.slice().sort(function(a,b){return st.sort==='pace'?b.putp-a.putp:b.chg-a.chg;});
+  var W=940,rh=64,top=44,H=top+rows.length*rh+10,lw=120,gap=70,pw=(W-lw-gap-110)/2,x1=lw,x2=lw+pw+gap+55;
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'Share of Year 1 funds put to work by July 31 beside the change in Year 2 award, for 4 states'},stage);
+  var pct=st.unit==='pct';
+  var t1=el('text',{x:x1,y:16,'font-weight':600},svg);t1.textContent='Year 1 funds put to work by Jul 31, 2026';t1.style.fill=css('--ink');
+  var t1b=el('text',{x:x1,y:32,'font-size':11.5},svg);t1b.textContent=pct?'Share of the Year 1 award':'Dollars';
+  var t2=el('text',{x:x2-pw/2+pw/2-55,y:16,'font-weight':600},svg);t2.setAttribute('x',x2-55);t2.textContent='Change in Year 2 award';t2.style.fill=css('--ink');
+  var t2b=el('text',{x:x2-55,y:32,'font-size':11.5},svg);t2b.textContent=pct?'Percent change from Year 1':'Dollars';
+  var maxPut=pct?50:100,maxChg=pct?2:4,zero=x2-55+pw/2;
+  el('line',{x1:zero,x2:zero,y1:top-4,y2:H-6,stroke:css('--ink3')},svg);
+  rows.forEach(function(s,i){
+    var y=top+i*rh,g=el('g',{'class':'barrow','aria-label':s.n+': '+s.putp.toFixed(0)+'% put to work, Year 2 change '+sgnM(s.chg)},svg);
+    var nm=el('text',{x:lw-14,y:y+24,'text-anchor':'end','font-size':15,'font-weight':600,'class':'nm'},g);nm.textContent=s.n;nm.style.fill=css('--ink');
+    var sb=el('text',{x:lw-14,y:y+41,'text-anchor':'end','font-size':11.5},g);sb.textContent=s.style;
+    el('rect',{x:x1,y:y+8,width:pw,height:30,fill:css('--soft'),rx:3},g);
+    var v=pct?s.putp:s.put,bw=Math.max(v/maxPut*pw,2);
+    el('rect',{x:x1,y:y+8,width:bw,height:30,fill:css('--accent'),rx:3,'class':'bar'},g);
+    var vt=el('text',{x:x1+bw+8,y:y+28,'font-size':14,'font-weight':700},g);vt.textContent=pct?v.toFixed(0)+'%':money(v);vt.style.fill=css('--ink');
+    el('rect',{x:x2-55,y:y+8,width:pw,height:30,fill:css('--soft'),rx:3},g);
+    var cv=pct?s.chgp:s.chg,cw=Math.max(Math.abs(cv)/maxChg*pw/2,2),up=cv>=0;
+    el('rect',{x:up?zero:zero-cw,y:y+8,width:cw,height:30,fill:css(up?'--gain':'--loss'),rx:3,'class':'bar'},g);
+    var ct=el('text',{x:up?zero+cw+8:zero-cw-8,y:y+28,'font-size':14,'font-weight':700,'text-anchor':up?'start':'end'},g);ct.textContent=pct?sgnP(cv):sgnM(cv);ct.style.fill=css('--ink');
+    var hit=el('rect',{x:0,y:y,width:W,height:rh-6,fill:'transparent'},g);
+    function on(e){g.classList.add('hot');stateTip(s,e,[['Change in scored half',sgnP(s.scored)]]);}
+    function off(){g.classList.remove('hot');hideTip();}
+    hit.addEventListener('pointermove',on);hit.addEventListener('pointerleave',off);focusable(g,on,off);
+  });
+  setText('takeaway','Mississippi moved fastest and lost the most');
+  setText('note','By the federal reporting cutoff Mississippi had put 46% of its Year 1 award to work and Louisiana 9%. Louisiana gained $3.5 million in Year 2; Mississippi lost $1.2 million. CMS says obligation figures alone do not set the award.');
+  keys([['Put to work','--accent'],['Gain','--gain'],['Loss','--loss']],true);
+  setText('src','Sources: CMS, RHTP Obligated Funds Report (state-reported, as of Jul 31, 2026); CMS award announcements, Dec 29, 2025 and Nov 9, 2026. Analysis: Kamen Partners.');
+}
+/* ---------- 2. mix ---------- */
+function drawMix(){
+  var c=document.getElementById('controls');c.appendChild(seg('Show','mixMode',[['share','Share of the full award'],['mix','Mix of money put to work'],['usd','Dollars']]));
+  var W=940,rh=62,H=F.length*rh+34,lw=120,iw=W-lw-90;
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'Year 1 money put to work by category for 4 states'},stage);
+  var mode=st.mixMode,maxUsd=100;
+  [0,25,50,75,100].forEach(function(v){var x=lw+iw*v/100;el('line',{x1:x,x2:x,y1:4,y2:H-28,stroke:css('--rule')},svg);var t=el('text',{x:x,y:H-10,'text-anchor':'middle','font-size':11.5},svg);t.textContent=mode==='usd'?'$'+v+'M':v+'%';});
+  F.forEach(function(s,i){
+    var y=i*rh+6,g=el('g',{'class':'barrow'},svg);
+    var nm=el('text',{x:lw-14,y:y+24,'text-anchor':'end','font-size':15,'font-weight':600},g);nm.textContent=s.n;nm.style.fill=css('--ink');
+    var sb=el('text',{x:lw-14,y:y+41,'text-anchor':'end','font-size':11.5},g);sb.textContent=money(s.put)+' of '+money(s.y1);
+    if(mode==='share')el('rect',{x:lw,y:y+6,width:iw,height:34,fill:css('--cnone'),rx:3},g);
+    var x=lw,den=mode==='share'?s.y1:mode==='mix'?s.put:maxUsd;
+    CAT.forEach(function(cat){var v=s.mix[cat[0]];if(!v)return;var w=v/den*iw;
+      var r=el('rect',{x:x+1,y:y+6,width:Math.max(w-2,1.5),height:34,fill:css(cat[2]),rx:2,'class':'bar',tabindex:0,'aria-label':s.n+', '+cat[1]+', '+money(v)},g);
+      function on(e){r.setAttribute('opacity',.8);tipAt(e,function(t){h('h3',null,s.n,t);h('div','sub',cat[1],t);h('div','big',money(v),t);h('div','biglab',(100*v/s.put).toFixed(0)+'% of money put to work, '+(100*v/s.y1).toFixed(1)+'% of the award',t);var p=h('div',null,s.detail[cat[0]],t);p.style.cssText='font-size:12.5px;color:var(--ink2);border-top:1px solid var(--rule);padding-top:8px;line-height:1.45';});}
+      function off(){r.removeAttribute('opacity');hideTip();}
+      r.addEventListener('pointermove',on);r.addEventListener('pointerleave',off);r.addEventListener('focus',function(){var b=r.getBoundingClientRect();on({clientX:b.left+b.width/2,clientY:b.top+b.height/2});});r.addEventListener('blur',off);
+      x+=w;});
+    if(mode==='share'){var t=el('text',{x:Math.max(x+10,lw+10),y:y+28,'font-size':12.5},g);t.textContent=(100-s.putp).toFixed(0)+'% not yet put to work';}
+  });
+  setText('takeaway',{share:'At the cutoff, Arkansas had funded only administration',mix:'Each state bought something different first',usd:'Mississippi had committed more than the other 3 states combined'}[mode]);
+  setText('note','Money each state reported as put to work by Jul 31, 2026, grouped by purpose. Mississippi led with technology and facility grants, Texas with prevention programs and mobile ICU buses, Louisiana with data platforms and nursing programs. Hover a segment for detail.');
+  keys(CAT.map(function(c){return [c[1],c[2]];}).concat(mode==='share'?[['Not yet put to work','--cnone']]:[]),true);
+  setText('src','Source: CMS, RHTP Obligated Funds Report (state-reported, as of Jul 31, 2026). Categories grouped by Kamen Partners from CMS use-of-funds labels.');
+}
+/* ---------- 3. scatter ---------- */
+function rank(a){var idx=a.map(function(v,i){return [v,i];}).sort(function(p,q){return p[0]-q[0];}),r=[];idx.forEach(function(p,i){r[p[1]]=i;});return r;}
+function pearson(x,y){var n=x.length,mx=0,my=0,i;for(i=0;i<n;i++){mx+=x[i];my+=y[i];}mx/=n;my/=n;var sxy=0,sx=0,sy=0;for(i=0;i<n;i++){sxy+=(x[i]-mx)*(y[i]-my);sx+=(x[i]-mx)*(x[i]-mx);sy+=(y[i]-my)*(y[i]-my);}return sxy/Math.sqrt(sx*sy);}
+function drawScatter(){
+  var c=document.getElementById('controls');c.appendChild(seg('Year 2 change in','y',[['chgp','Percent'],['chg','Dollars']]));c.appendChild(seg('Highlight','hl',[['four','These 4 states'],['south','South Central neighbors too'],['all','All states']]));
+  var SET={four:{TX:1,LA:1,AR:1,MS:1},south:{TX:1,LA:1,AR:1,MS:1,OK:1,AL:1,TN:1},all:null}[st.hl];
+  var rows=ALL.map(function(r){return {a:r.a,n:r.n,ob:r.ob,y1:r.y1,y2:r.y2,chg:r.y2-r.y1,chgp:100*(r.y2-r.y1)/r.y1};});
+  var W=940,H=480,mg={l:62,r:24,t:14,b:50},iw=W-mg.l-mg.r,ih=H-mg.t-mg.b,yk=st.y,ymax=yk==='chgp'?4.2:8.2;
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'Scatter plot of share of Year 1 funds put to work by July 31 against Year 2 award change, all 50 states'},stage);
+  function X(v){return mg.l+v/104*iw;} function Y(v){return mg.t+ih/2-v/ymax*ih/2;}
+  (yk==='chgp'?[-4,-2,0,2,4]:[-8,-4,0,4,8]).forEach(function(v){el('line',{x1:mg.l,x2:W-mg.r,y1:Y(v),y2:Y(v),stroke:css(v===0?'--ink3':'--rule')},svg);var t=el('text',{x:mg.l-10,y:Y(v)+4,'text-anchor':'end'},svg);t.textContent=yk==='chgp'?sgnP(v,0):sgnM(v).replace('.0','');});
+  [0,25,50,75,100].forEach(function(v){var t=el('text',{x:X(v),y:mg.t+ih+20,'text-anchor':'middle'},svg);t.textContent=v+'%';});
+  var xl=el('text',{x:mg.l+iw/2,y:H-8,'text-anchor':'middle'},svg);xl.textContent='Share of Year 1 award put to work by Jul 31, 2026';
+  var r=pearson(rank(rows.map(function(d){return d.ob;})),rank(rows.map(function(d){return d[yk];})));
+  var dots=[];
+  rows.slice().sort(function(a,b){return (SET&&SET[a.a]?1:0)-(SET&&SET[b.a]?1:0);}).forEach(function(d){
+    var on=!SET||SET[d.a],g={d:d,x:X(d.ob),y:Y(d[yk])};
+    g.node=el('circle',{cx:g.x,cy:g.y,r:on?6.5:4.5,fill:css(on?'--hl':'--other'),'class':'dot','fill-opacity':on?1:.8},svg);g.r=on?6.5:4.5;
+    if(SET&&SET[d.a]){var t=el('text',{x:g.x+10,y:g.y+4,'font-weight':700,'font-size':13},svg);t.textContent=d.n;t.style.fill=css('--ink');if(d.a==='AR'){t.setAttribute('y',g.y+16);}if(d.a==='AL'){t.setAttribute('y',g.y+15);}if(d.a==='TN'){t.setAttribute('y',g.y-8);}}
+    dots.push(g);});
+  var hit=el('rect',{x:0,y:0,width:W,height:H,fill:'transparent'},svg),cur=null;
+  function reset(){if(cur){cur.node.setAttribute('r',cur.r);cur.node.setAttribute('stroke',css('--bg'));cur=null;}}
+  hit.addEventListener('pointermove',function(e){var b=svg.getBoundingClientRect(),k=W/b.width,px=(e.clientX-b.left)*k,py=(e.clientY-b.top)*k,best=null,bd=1e9;
+    dots.forEach(function(g){var dd=(g.x-px)*(g.x-px)+(g.y-py)*(g.y-py);if(dd<bd){bd=dd;best=g;}});
+    if(cur!==best)reset();
+    if(best&&bd<40*40){cur=best;best.node.setAttribute('r',best.r+2.5);best.node.setAttribute('stroke',css('--ink'));var d=best.d;
+      tipAt(e,function(t){h('h3',null,d.n,t);h('div','big',sgnM(d.chg),t);h('div','biglab','Change in Year 2 award ('+sgnP(d.chgp)+')',t);var dl=h('dl',null,null,t);[['Put to work by Jul 31',d.ob.toFixed(0)+'%'],['Year 1 award',money(d.y1)],['Year 2 award',money(d.y2)]].forEach(function(p){h('dt',null,p[0],dl);h('dd',null,p[1],dl);});});}
+    else{hideTip();reset();}});
+  hit.addEventListener('pointerleave',function(){reset();hideTip();});
+  setText('takeaway','Nationally, spending pace was only weakly tied to Year 2 gains');
+  setText('note','Across all 50 states the rank correlation is '+(r>0?'+':'')+r.toFixed(2)+', too weak to separate from chance. Oklahoma spent fast and gained; Mississippi spent fast and lost. Each dot is a state.');
+  keys([[st.hl==='all'?'All states':'Highlighted states','--hl']].concat(st.hl==='all'?[]:[['Other states','--other']]));
+  setText('src','Sources: CMS, RHTP Obligated Funds Report (as of Jul 31, 2026); CMS award announcements. Analysis: Kamen Partners.');
+}
+/* ---------- 4. policy ---------- */
+function drawPolicy(){
+  var c=document.getElementById('controls');c.appendChild(seg('Show','polFilter',[['all','All policies'],['diff','Where the states differ']]));
+  var order=['TX','LA','AR','MS'],by={};F.forEach(function(s){by[s.a]=s;});
+  var tb=h('table','pol',null,stage),tr=h('tr',null,null,h('thead',null,null,tb));h('th',null,'Scored policy action',tr);
+  order.forEach(function(a){var th=h('th','st',by[a].n,tr),sm=h('small',by[a].chg>=0?'gain':'loss',sgnM(by[a].chg)+' in Year 2',th);});
+  var body=h('tbody',null,null,tb);
+  POL.forEach(function(p){var same=order.every(function(a){return p.c[a][0]===p.c[order[0]][0];});if(st.polFilter==='diff'&&same)return;
+    var r=h('tr',null,null,body),td=h('td','row',p.k,r);h('small',null,p.w,td);
+    order.forEach(function(a){var v=p.c[a],cell=h('td',null,null,r),chip=h('span','chip '+v[0],null,cell);h('i',null,null,chip);h('span',null,v[1],chip);chip.setAttribute('tabindex',0);
+      function on(e){tipAt(e,function(t){h('h3',null,by[a].n,t);h('div','sub',p.k,t);h('div','big',v[1],t).style.fontSize='18px';var d=h('div',null,v[2],t);d.style.cssText='font-size:12.5px;color:var(--ink2);border-top:1px solid var(--rule);padding-top:8px;margin-top:8px;line-height:1.45';});}
+      chip.addEventListener('pointermove',on);chip.addEventListener('pointerleave',hideTip);chip.addEventListener('focus',function(){var b=chip.getBoundingClientRect();on({clientX:b.right,clientY:b.top+b.height/2});});chip.addEventListener('blur',hideTip);});});
+  setText('takeaway','Arkansas promised the most. Texas had already delivered');
+  setText('note','CMS scores state policy on a ladder: points for committing, more for enacting. Texas entered with its policies in law. Arkansas made 5 commitments, more than any of the other 3. Mississippi committed to 2 but passed a certificate of need change it had not promised.');
+  var lg=document.getElementById('legend');[['inplace','In place before the award'],['acted','Acted in 2026'],['committed','Committed, not yet confirmed'],['none','No commitment']].forEach(function(p){var k=h('span','chip '+p[0],null,lg);h('i',null,null,k);var s=h('span',null,p[1],k);s.style.display='inline';k.style.marginRight='14px';});
+  setText('src','Sources: CMS, Rural Health Transformation 50 State Spotlights; state applications (Texas HHSC, Arkansas); Mississippi Today; Rural Care Journey tracker. Status reflects public records, not CMS scoring, which is unpublished. Analysis: Kamen Partners.');
+}
+/* ---------- 5. timeline ---------- */
+function drawTime(){
+  var W=940,lw=120,rh=62,top=46,order=['MS','TX','LA','AR'],H=top+order.length*rh+30,by={};F.forEach(function(s){by[s.a]=s;});
+  var t0=Date.parse('2026-03-15'),t1=Date.parse('2026-11-25');function X(d){return lw+(Date.parse(d)-t0)/(t1-t0)*(W-lw-20);}
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'Timeline of budget approvals and award announcements in 4 states, March to November 2026'},stage);
+  ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov'].forEach(function(m,i){var d='2026-'+('0'+(i+4)).slice(-2)+'-01',x=X(d);el('line',{x1:x,x2:x,y1:top-6,y2:H-26,stroke:css('--rule')},svg);var t=el('text',{x:x+6,y:H-10,'font-size':11.5},svg);t.textContent=m;});
+  var cut=X('2026-07-31');el('rect',{x:lw,y:top-6,width:cut-lw,height:H-26-top+6,fill:css('--accent'),'fill-opacity':.06},svg);
+  [['2026-07-31','Reporting cutoff, Jul 31','--accent'],['2026-10-30','Obligation deadline, Oct 30','--ink3']].forEach(function(p){var x=X(p[0]);el('line',{x1:x,x2:x,y1:20,y2:H-26,stroke:css(p[2]),'stroke-width':1.5,'stroke-dasharray':'5 4'},svg);var t=el('text',{x:x-6,y:16,'text-anchor':'end','font-size':12,'font-weight':600},svg);t.textContent=p[1];t.style.fill=css('--ink');});
+  var ct=el('text',{x:lw+8,y:top+8,'font-size':11.5},svg);ct.textContent='Counted in the Year 2 score';
+  order.forEach(function(a,i){var s=by[a],y=top+i*rh+rh/2+4;
+    el('line',{x1:lw,x2:W-20,y1:y,y2:y,stroke:css('--ink3'),'stroke-opacity':.5},svg);
+    var nm=el('text',{x:lw-14,y:y-2,'text-anchor':'end','font-size':15,'font-weight':600},svg);nm.textContent=s.n;nm.style.fill=css('--ink');
+    var sb=el('text',{x:lw-14,y:y+15,'text-anchor':'end','font-size':11.5,'font-weight':600},svg);sb.textContent=sgnM(s.chg);sb.style.fill=css(s.chg>=0?'--gain':'--loss');
+    EV.filter(function(e){return e.a===a;}).forEach(function(e){var x=X(e.d),r=e.big?9:6;
+      var n=el('circle',{cx:x,cy:y,r:r,fill:e.big?css('--hl'):css('--bg'),stroke:css('--hl'),'stroke-width':2,'class':'bar',tabindex:0,'aria-label':s.n+': '+e.t},svg);
+      if(e.approx)n.setAttribute('stroke-dasharray','3 2');
+      function on(ev){n.setAttribute('r',r+2);tipAt(ev,function(t){h('h3',null,e.t,t);var dt=new Date(e.d+'T12:00:00');h('div','sub',s.n+' · '+(e.approx?dt.toLocaleDateString('en-US',{month:'long',year:'numeric'}):dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})),t);if(e.x){var d=h('div',null,e.x,t);d.style.cssText='font-size:12.5px;color:var(--ink2);line-height:1.45';}});}
+      function off(){n.setAttribute('r',r);hideTip();}
+      n.addEventListener('pointermove',on);n.addEventListener('pointerleave',off);n.addEventListener('focus',function(){var b=n.getBoundingClientRect();on({clientX:b.left+b.width/2,clientY:b.top});});n.addEventListener('blur',off);});
+  });
+  setText('takeaway','Year 2 was scored before most awards were announced');
+  setText('note','CMS scored Year 2 on annual reports covering activity through Jul 31. Every dated award round in these 4 states came later. What CMS could see by the cutoff was setup: budgets approved, offices built, applications opened. Filled dots are award announcements; open dots are setup steps. Hover for detail.');
+  var lg=document.getElementById('legend');
+  [['Award announcement',true],['Setup milestone',false]].forEach(function(p){var k=h('span','key',null,lg),b=h('b',null,null,k);b.style.cssText='border:2px solid '+css('--hl')+';background:'+(p[1]?css('--hl'):'transparent')+';width:11px;height:11px';h('span',null,p[0],k);});
+  setText('src','Sources: Texas HHSC and TORCH; Louisiana Department of Health; Mississippi Today and Magnolia Tribune; Arkansas Advocate and Arkansas Business; Fierce Healthcare tracker; Rural Care Journey. Dashed outlines mark events dated to the month only. Analysis: Kamen Partners.');
+}
+/* ---------- render ---------- */
+function render(){document.getElementById('controls').textContent='';clearStage();
+  Array.prototype.forEach.call(root.querySelectorAll('[role=tab]'),function(b){b.setAttribute('aria-selected',b.getAttribute('data-tab')===st.tab);});
+  ({paradox:drawParadox,mix:drawMix,scatter:drawScatter,policy:drawPolicy,time:drawTime})[st.tab]();
+  if(window.parent!==window){try{window.parent.postMessage({rhtpHeight:document.documentElement.scrollHeight},'*');}catch(e){}}
+}
+Array.prototype.forEach.call(root.querySelectorAll('[role=tab]'),function(b){b.addEventListener('click',function(){st.tab=b.getAttribute('data-tab');render();});});
+var q=new URLSearchParams(location.search),th=q.get('theme');
+if(th!=='light'&&th!=='dark')th=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';
+if(q.get('tab')&&{paradox:1,mix:1,scatter:1,policy:1,time:1}[q.get('tab')])st.tab=q.get('tab');
+var tb=document.getElementById('themeBtn');
+function setTheme(t){root.setAttribute('data-theme',t);tb.textContent=t==='dark'?'Light':'Dark';document.body.style.background=q.get('bg')==='transparent'?'transparent':css('--bg');render();}
+tb.addEventListener('click',function(){setTheme(dark()?'light':'dark');});
+setTheme(th);
+})();
+</script>
+</body>
+</html>
