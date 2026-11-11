@@ -272,7 +272,7 @@ function render(){controls();clearStage();
 }
 Array.prototype.forEach.call(root.querySelectorAll('[role=tab]'),function(b){b.addEventListener('click',function(){st.tab=b.getAttribute('data-tab');render();});});
 var q=new URLSearchParams(location.search),th=q.get('theme');
-if(th!=='light'&&th!=='dark')th=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';
+if(th!=='light'&&th!=='dark')th='light';
 if(q.get('tab')&&{map:1,scatter:1,bars:1}[q.get('tab')])st.tab=q.get('tab');
 var tb=document.getElementById('themeBtn');
 function setTheme(t){root.setAttribute('data-theme',t);tb.textContent=t==='dark'?'Light':'Dark';document.body.style.background=q.get('bg')==='transparent'?'transparent':css('--bg');render();}

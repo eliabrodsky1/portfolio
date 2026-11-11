@@ -80,11 +80,17 @@ html,body{margin:0;background:transparent}
 .rhtp .chip.inplace i{background:var(--hl);border-color:var(--hl)}
 .rhtp .chip.acted i{background:linear-gradient(90deg,var(--hl) 50%,transparent 50%);border-color:var(--hl)}
 .rhtp .chip.committed i{border-color:var(--hl)}
+.rhtp .chip.partial i{background:color-mix(in srgb,var(--hl) 38%,transparent);border-color:var(--hl)}
+.rhtp table.pol th.st small.sc{color:var(--ink3);font-weight:500}
+.rhtp .usd{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--ink);cursor:default}
+.rhtp .usd .trk{flex:1;height:10px;background:var(--soft);border-radius:3px;overflow:hidden;min-width:30px}
+.rhtp .usd .trk b{display:block;height:100%;background:var(--accent);border-radius:3px}
+.rhtp .usd.na{color:var(--ink3);font-weight:500}
 .rhtp .chip.none{color:var(--ink3);font-weight:500}
 .rhtp .chip.none i{border-style:dotted}
 .rhtp table.pol tr.dim td{opacity:.28}
 .rhtp .gain{color:var(--gain)}.rhtp .loss{color:var(--loss)}
-@media (max-width:640px){.rhtp table.pol{font-size:12px}.rhtp table.pol td,.rhtp table.pol th{padding:7px 5px}.rhtp .chip span{display:none}.rhtp .chip i{width:13px;height:13px}}
+@media (max-width:640px){.rhtp .usd .trk{display:none}.rhtp table.pol{font-size:12px}.rhtp table.pol td,.rhtp table.pol th{padding:7px 5px}.rhtp .chip span{display:none}.rhtp .chip i{width:13px;height:13px}}
 </style>
 </head>
 <body>
@@ -100,7 +106,7 @@ html,body{margin:0;background:transparent}
     <button role="tab" data-tab="paradox" aria-selected="true" type="button">The paradox</button>
     <button role="tab" data-tab="mix" aria-selected="false" type="button">Where it went</button>
     <button role="tab" data-tab="scatter" aria-selected="false" type="button">Against all 50</button>
-    <button role="tab" data-tab="policy" aria-selected="false" type="button">Policy promises</button>
+    <button role="tab" data-tab="policy" aria-selected="false" type="button">Policy scorecard</button>
     <button role="tab" data-tab="time" aria-selected="false" type="button">Timeline</button>
   </div>
   <div class="rhtp-controls" id="controls"></div>
@@ -118,44 +124,85 @@ var root=document.getElementById('rhtp'),stage=document.getElementById('stage'),
 var NS='http://www.w3.org/2000/svg';
 /* ---------- regional data (CMS Obligated Funds Report, as of Jul 31, 2026; CMS award releases) ---------- */
 var F=[
- {a:'MS',n:'Mississippi',y1:205.907,y2:204.677,put:94.423,style:'Fast grants',
+ {a:'MS',n:'Mississippi',y1:205.907,y2:204.677,put:94.423,ann:136.7,pin:10,owed:1,style:'Fast grants',
   mix:{tech:53.2,fac:28.5,admin:12.723},
   detail:{tech:'Rural Provider Technology Grant program ($47.5M) and telehealth grants ($5.7M)',fac:'Rural Capital Care Gap Closure Grant Program',admin:'Grant management contract ($10.0M), rural health and EMS assessments ($2.65M), staff'}},
- {a:'TX',n:'Texas',y1:281.319,y2:281.976,put:53.289,style:'Early big-ticket buys',
+ {a:'TX',n:'Texas',y1:281.319,y2:281.976,put:53.289,ann:224.5,pin:11,owed:2,style:'Early big-ticket buys',
   mix:{prev:24.75,fac:20.0,work:2.389,admin:6.150},
   detail:{prev:'Community prevention, wellness and nutrition programs run by rural hospital districts',fac:'Mobile intensive care buses for the Texas Emergency Medical Task Force',work:'Community health worker training and certification',admin:'Health and Human Services Commission program costs'}},
- {a:'LA',n:'Louisiana',y1:208.374,y2:211.858,put:19.165,style:'Build the platform first',
+ {a:'LA',n:'Louisiana',y1:208.374,y2:211.858,put:19.165,ann:208.4,pin:11,owed:0,style:'Build the platform first',
   mix:{tech:9.586,work:6.068,care:1.674,admin:1.837},
   detail:{tech:'Health engagement platform ($4.8M), EHR integration ($4.3M), rural health GIS analytics ($0.5M)',work:'Nursing, sonography and radiologic tech program expansion',care:'Technical assistance on alternative payment models',admin:'Program administration'}},
- {a:'AR',n:'Arkansas',y1:208.779,y2:207.789,put:6.158,style:'All at once, late',
+ {a:'AR',n:'Arkansas',y1:208.779,y2:207.789,put:6.158,ann:203.9,pin:11,owed:3,style:'All at once, late',
   mix:{admin:6.158},
   detail:{admin:'Contractual agreements ($6.0M) and staff. No initiative funding reported by the cutoff'}}
 ];
 F.forEach(function(s){s.chg=s.y2-s.y1;s.chgp=100*s.chg/s.y1;s.putp=100*s.put/s.y1;s.scored=100*s.chg/(s.y1-100);});
 var CAT=[['tech','Technology and telehealth','--c1'],['fac','Facilities and equipment','--c2'],['prev','Prevention and wellness','--c3'],['work','Workforce','--c4'],['care','Care and payment models','--c6'],['admin','Administration and contracts','--cadmin']];
 var POL=[
- {k:'Presidential Fitness Test',w:'Part of a 3.75% factor',c:{TX:['committed','Committed','Governor committed all public schools to reinstate the test'],LA:['committed','Committed','Listed in CMS summary of the state plan'],AR:['committed','Committed','Listed in CMS summary of the state plan'],MS:['acted','Acted in 2026','Committed; state moved to reestablish the test in schools']}},
- {k:'SNAP food restriction waiver',w:'3.75% of the score',c:{TX:['inplace','In place','Approved waiver cited in the state plan'],LA:['committed','Committed','Listed in CMS summary of the state plan'],AR:['inplace','In place','State plan cites an existing waiver'],MS:['acted','Acted in 2026','Committed; state sought a waiver']}},
- {k:'Nutrition education for physicians',w:'1.75% of the score',c:{TX:['inplace','In place','Requirement enacted for physicians, PAs and nurses; CMS notes it is already in implementation'],LA:['committed','Committed','Listed in CMS summary of the state plan'],AR:['committed','Committed','Listed in CMS summary of the state plan'],MS:['none','No commitment','Not among the state’s commitments; a bill was introduced in the 2026 session']}},
- {k:'Licensure compacts',w:'1.75% of the score',c:{TX:['none','Not listed','Not among commitments in CMS summary'],LA:['none','Not listed','Not among commitments in CMS summary'],AR:['committed','Committed','Committed to join the physician compact'],MS:['none','No commitment','Tracker lists no compact commitments']}},
- {k:'Scope of practice',w:'1.75% of the score',c:{TX:['none','Not listed','Not among commitments in CMS summary'],LA:['none','Not listed','Not among commitments in CMS summary'],AR:['committed','Committed','Committed to expand pharmacist scope of practice'],MS:['none','No commitment','Tracker lists no scope of practice commitments']}},
- {k:'Certificate of need',w:'1.75% of the score',c:{TX:['none','Not listed','Not among commitments in CMS summary'],LA:['none','Not listed','Not among commitments in CMS summary'],AR:['none','No further action','State plan says no further policy planned'],MS:['acted','Acted in 2026','No commitment in the plan, but a March 2026 law loosens rules for about 55 rural hospitals']}}
+ {k:'School fitness test',f:'B.2',w:'A quarter of a 3.75% factor. First scored in Year 2',c:{
+  TX:['committed','Promised by Sep 2028','Texas law already requires a school fitness assessment. The governor committed that schools will reinstate the Presidential Fitness Test no later than Sep 1, 2028. CMS lists it as not yet required.',null],
+  LA:['inplace','Executive order, Nov 2025','Signed Nov 4, 2025, the day the application went in. The order urges the education department to work the test into physical education standards. CMS reports no Louisiana commitments outstanding as of Jul 31, 2026.',null],
+  AR:['acted','Executive order, 2026','Committed in the application with a Dec 31, 2028 deadline. A governor’s order, announced Apr 20, 2026, requires public schools to add elements of the test in the 2026-27 school year.',null],
+  MS:['inplace','Executive order, Oct 2025','Executive Order 1589, signed Oct 30, 2025, reestablishes the test for the 2026-27 school year. CMS counted it as a commitment.',null]}},
+ {k:'SNAP food restriction waiver',f:'B.3',w:'3.75% of the score',c:{
+  TX:['inplace','USDA approved','Approved Aug 4, 2025. Sweetened drinks and candy restricted from Apr 1, 2026.',7.27],
+  LA:['inplace','USDA approved','Approved Aug 4, 2025. Soft drinks, energy drinks and candy restricted from Feb 18, 2026.',7.27],
+  AR:['inplace','USDA approved','Approved Jun 10, 2025. Soda, low-juice drinks, energy drinks and candy restricted from Jul 1, 2026.',7.27],
+  MS:['committed','Filed, still pending','Requested Oct 31, 2025. Not on USDA’s list of approved waivers as of Nov 3, 2026. A pending waiver scores 75 of 100 points.',6.36]}},
+ {k:'Nutrition training for physicians',f:'B.4',w:'1.75% of the score. First scored in Year 2',c:{
+  TX:['inplace','In law, rules pending','Senate Bill 25 (2025) requires nutrition and metabolic health education for physicians, physician assistants and nurses. The Texas Medical Board committed to adopt rules by Dec 31, 2026.',null],
+  LA:['inplace','In law','Act 463 of 2025 requires 1 hour of nutrition education every 4 years. Effective January 2026. The federal funding notice cites it as a model.',null],
+  AR:['committed','Promised, no date','No requirement today. The application commits to one for continuing education and for medical schools without giving a date. The federal deadline is Dec 31, 2028.',null],
+  MS:['none','None, no promise','Not in the CMS policy table for Mississippi. A 2026 bill requiring 1 hour for license renewal (HB 1367) died in committee on Feb 3, 2026.',null]}},
+ {k:'Certificate of need',f:'C.3',w:'1.75% of the score. Based on a 2024 Cicero Institute ranking',c:{
+  TX:['inplace','No such laws','Texas has no certificate of need statutes. Full points.',2.92],
+  LA:['partial','Moderate rules','Louisiana uses facility need review. The state expected 50 of 100 points. No commitment to change.',1.46],
+  AR:['partial','Limited rules','Cicero score of 15, which converts to 75 of 100 points. The application says no further action is planned.',2.19],
+  MS:['acted','Stringent, eased in 2026','Lowest baseline of the 4 and no commitment. House Bill 3, signed Feb 4, 2026, raised the spending thresholds that trigger review; a second law eased rules for rural hospitals. CMS has not said whether laws passed after the 2024 ranking change the score.',0.73]}},
+ {k:'Licensure compacts',f:'D.2',w:'1.75% of the score. Average of 5 compacts',c:{
+  TX:['partial','4 of 5','Member of the physician, nurse, EMS and psychology compacts. Not in the physician assistant compact. No commitment.',1.88],
+  LA:['acted','3 of 5, added a 4th','Physician, nurse and EMS at application. Act 302, signed May 22, 2026, joins the psychology compact effective Jan 1, 2028. Louisiana had not promised it. Not in the physician assistant compact.',1.41],
+  AR:['partial','4 of 5, 5th under way','Nurse, EMS, psychology and physician assistant compacts. Physician compact law passed; the state committed to implement it in 2026.',2.29],
+  MS:['partial','4 of 5','Physician (2016), nurse, EMS (2017) and psychology (2024). Not in the physician assistant compact. No commitment.',1.88]}},
+ {k:'Scope of practice',f:'D.3',w:'1.75% of the score. Average of 4 professions',c:{
+  TX:['partial','Mostly restricted','Physician assistants moderate, nurse practitioners restricted, pharmacists restricted, dental hygienists semi-restricted. No commitment.',0.81],
+  LA:['partial','Mostly restricted','Physician assistants moderate, nurse practitioners reduced, pharmacists and dental hygienists restricted. No commitment.',0.81],
+  AR:['committed','Mixed, bill promised','Physician assistants advanced, nurse practitioners reduced, pharmacists limited, dental hygienists semi-restricted. Committed to bring legislation in the 2027 session, with a Dec 31, 2027 target.',2.04],
+  MS:['partial','Most restricted of the 4','Physician assistants and nurse practitioners reduced; pharmacists and dental hygienists restricted. No commitment.',0.41]}},
+ {k:'Short-term insurance plans',f:'E.3',w:'1.75% of the score',c:{
+  TX:['inplace','No added limits','No limits beyond federal rules. Maximum initial term 3 months, 4 months in total.',2.62],
+  LA:['inplace','No added limits','Louisiana mirrors federal practice.',2.62],
+  AR:['inplace','No added limits','No limits beyond federal rules.',2.62],
+  MS:['inplace','No added limits','No limits beyond federal rules.',2.62]}},
+ {k:'Remote care in Medicaid',f:'F.1',w:'Half of a 3.75% factor. Dollars include initiative scoring',c:{
+  TX:['inplace','3 of 3 types paid','Medicaid pays for live video, store-and-forward and remote monitoring. 1 policy admits out-of-state clinicians; Texas issues no telemedicine license.',3.46],
+  LA:['partial','2 of 3 types paid','Medicaid pays for live video but not store-and-forward. Policies admit out-of-state clinicians. Louisiana still drew the most money on this factor, which blends in initiative scoring.',4.18],
+  AR:['inplace','3 of 3 types paid','Medicaid pays for live video, store-and-forward and remote monitoring. 1 policy admits out-of-state clinicians.',3.78],
+  MS:['inplace','3 of 3 types paid','Medicaid pays for all 3 types. 1 policy admits out-of-state clinicians.',3.51]}}
 ];
 var EV=[
  {a:'TX',d:'2026-04-07',t:'CMS approves Year 1 budget',x:'$281.3M authorized for the first budget period'},
- {a:'TX',d:'2026-06-19',t:'First awards scheduled',x:'Earliest notice-of-award date on the state’s published schedule'},
+ {a:'TX',d:'2026-04-23',t:'First $60M opened to hospital districts',x:'Funding made available for applications, not yet awarded'},
+ {a:'TX',d:'2026-09-28',t:'$51.0M to 68 hospital districts',x:'First award round: $750,000 each for prevention and wellness programs',big:1},
+ {a:'TX',d:'2026-10-15',t:'$78.1M to 216 providers',x:'',big:1},
+ {a:'TX',d:'2026-10-22',t:'$8.1M to 28 providers',x:'',big:1},
+ {a:'TX',d:'2026-10-29',t:'$87.2M to 129 providers',x:'Brings announced awards to about $224.5M of $281.3M',big:1},
+ {a:'MS',d:'2026-02-04',t:'Certificate of need law signed',x:'House Bill 3 raises the spending thresholds that trigger state review',pol:1},
  {a:'MS',d:'2026-04-20',t:'CMS approves Year 1 budget',x:''},
  {a:'MS',d:'2026-05-15',t:'First funding notices posted',x:'May 2026; day not confirmed',approx:1},
  {a:'MS',d:'2026-09-15',t:'$104.1M to 167 grantees announced',x:'September 2026; day not confirmed. Most of this was already counted as put to work by Jul 31',approx:1,big:1},
- {a:'MS',d:'2026-10-21',t:'$32.6M to about 60 grantees',x:'Workforce and psychiatric emergency services',big:1},
+ {a:'MS',d:'2026-10-21',t:'$32.6M to 60 grantees',x:'Workforce and psychiatric emergency services',big:1},
  {a:'LA',d:'2026-04-07',t:'Rural health office created',x:'Executive order establishes the office and an advisory council'},
+ {a:'LA',d:'2026-05-22',t:'Psychology compact signed into law',x:'Act 302, effective Jan 1, 2028. A scored policy the state had not promised',pol:1},
  {a:'LA',d:'2026-05-25',t:'Funding opportunities published',x:'Year 1 application deadlines ran Jul 10 to Aug 14'},
- {a:'LA',d:'2026-10-08',t:'$37.7M workforce awards',x:'',big:1},
- {a:'LA',d:'2026-11-09',t:'State reports Year 1 fully awarded',x:'$208M; 551 applications requesting more than $498M',big:1},
+ {a:'LA',d:'2026-10-08',t:'$37.7M workforce awards',x:'Rural HERO up to $20M, Rural Clinician Credit Bank up to $12.7M',big:1},
+ {a:'LA',d:'2026-11-07',t:'State reports Year 1 fully obligated',x:'$208M across 5 initiatives; 551 applications requesting more than $498M',big:1},
+ {a:'AR',d:'2026-04-20',t:'School fitness test order announced',x:'Governor’s order requires public schools to add test elements in 2026-27. Announced Apr 20; signing date not confirmed',pol:1},
  {a:'AR',d:'2026-08-31',t:'$149.3M awards announced',x:'Telehealth, specialty care and infrastructure',big:1},
- {a:'AR',d:'2026-09-24',t:'$54.6M awards announced',x:'Completes distribution of the Year 1 award',big:1}
+ {a:'AR',d:'2026-09-24',t:'$54.6M awards announced',x:'Brings announced awards to $203.9M of $208.8M',big:1}
 ];
-var st={tab:'paradox',unit:'pct',sort:'pace',mixMode:'share',y:'chgp',hl:'four',polFilter:'all'};
+var st={tab:'paradox',unit:'pct',sort:'pace',mixMode:'share',y:'chgp',hl:'four',polFilter:'all',polView:'status'};
 /* ---------- helpers ---------- */
 function el(tag,attrs,parent){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
 function h(tag,cls,txt,parent){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;if(parent)parent.appendChild(e);return e;}
@@ -170,7 +217,7 @@ function tipAt(evt,build){tip.textContent='';build(tip);var box=stage.getBoundin
 function hideTip(){tip.classList.remove('on');}
 function stateTip(s,evt,extra){tipAt(evt,function(t){h('h3',null,s.n,t);h('div','sub',s.style,t);
   h('div','big',sgnM(s.chg),t);h('div','biglab','Change in Year 2 award ('+sgnP(s.chgp)+')',t);
-  var dl=h('dl',null,null,t);(extra||[]).concat([['Year 1 award',money(s.y1)],['Year 2 award',money(s.y2)],['Put to work by Jul 31',money(s.put)+' ('+s.putp.toFixed(0)+'%)']]).forEach(function(p){h('dt',null,p[0],dl);h('dd',null,p[1],dl);});});}
+  var dl=h('dl',null,null,t);(extra||[]).concat([['Year 1 award',money(s.y1)],['Year 2 award',money(s.y2)],['Put to work by Jul 31',money(s.put)+' ('+s.putp.toFixed(0)+'%)'],['Awards announced by Nov 9',money(s.ann)],['Policies in place / still owed',s.pin+' / '+s.owed]]).forEach(function(p){h('dt',null,p[0],dl);h('dd',null,p[1],dl);});});}
 function seg(label,key,opts){var l=h('label',null,label),g=h('span','seg',null,l);opts.forEach(function(o){var b=h('button',null,o[1],g);b.type='button';b.setAttribute('aria-pressed',st[key]===o[0]);b.addEventListener('click',function(){st[key]=o[0];render();});});return l;}
 function keys(items,sq){var lg=document.getElementById('legend');items.forEach(function(p){var k=h('span','key',null,lg),b=h('b',sq?'sq':null,null,k);b.style.background=css(p[1]);h('span',null,p[0],k);});}
 function focusable(node,fn,off){node.setAttribute('tabindex',0);node.addEventListener('focus',function(){var b=node.getBoundingClientRect();fn({clientX:b.left+b.width/2,clientY:b.top+b.height/2});});node.addEventListener('blur',off);}
@@ -272,27 +319,37 @@ function drawScatter(){
 }
 /* ---------- 4. policy ---------- */
 function drawPolicy(){
-  var c=document.getElementById('controls');c.appendChild(seg('Show','polFilter',[['all','All policies'],['diff','Where the states differ']]));
-  var order=['TX','LA','AR','MS'],by={};F.forEach(function(s){by[s.a]=s;});
-  var tb=h('table','pol',null,stage),tr=h('tr',null,null,h('thead',null,null,tb));h('th',null,'Scored policy action',tr);
-  order.forEach(function(a){var th=h('th','st',by[a].n,tr),sm=h('small',by[a].chg>=0?'gain':'loss',sgnM(by[a].chg)+' in Year 2',th);});
+  var c=document.getElementById('controls');c.appendChild(seg('View','polView',[['status','Status'],['usd','Year 1 dollars']]));c.appendChild(seg('Show','polFilter',[['all','All 8 policies'],['diff','Where the states differ']]));
+  var order=['TX','LA','AR','MS'],by={},usd=st.polView==='usd';F.forEach(function(s){by[s.a]=s;});
+  var tot={};order.forEach(function(a){tot[a]=0;POL.forEach(function(p){if(p.f!=='F.1'&&p.c[a][3])tot[a]+=p.c[a][3];});});
+  var tb=h('table','pol',null,stage),tr=h('tr',null,null,h('thead',null,null,tb));h('th',null,'Scored policy',tr);
+  order.forEach(function(a){var th=h('th','st',by[a].n,tr);h('small',by[a].chg>=0?'gain':'loss',sgnM(by[a].chg)+' in Year 2',th);
+    h('small','sc',usd?'$'+tot[a].toFixed(1)+'M from policy-only factors':by[a].pin+' in place, '+by[a].owed+' still owed',th);});
   var body=h('tbody',null,null,tb);
-  POL.forEach(function(p){var same=order.every(function(a){return p.c[a][0]===p.c[order[0]][0];});if(st.polFilter==='diff'&&same)return;
-    var r=h('tr',null,null,body),td=h('td','row',p.k,r);h('small',null,p.w,td);
-    order.forEach(function(a){var v=p.c[a],cell=h('td',null,null,r),chip=h('span','chip '+v[0],null,cell);h('i',null,null,chip);h('span',null,v[1],chip);chip.setAttribute('tabindex',0);
-      function on(e){tipAt(e,function(t){h('h3',null,by[a].n,t);h('div','sub',p.k,t);h('div','big',v[1],t).style.fontSize='18px';var d=h('div',null,v[2],t);d.style.cssText='font-size:12.5px;color:var(--ink2);border-top:1px solid var(--rule);padding-top:8px;margin-top:8px;line-height:1.45';});}
-      chip.addEventListener('pointermove',on);chip.addEventListener('pointerleave',hideTip);chip.addEventListener('focus',function(){var b=chip.getBoundingClientRect();on({clientX:b.right,clientY:b.top+b.height/2});});chip.addEventListener('blur',hideTip);});});
-  setText('takeaway','Arkansas promised the most. Texas had already delivered');
-  setText('note','CMS scores state policy on a ladder: points for committing, more for enacting. Texas entered with its policies in law. Arkansas made 5 commitments, more than any of the other 3. Mississippi committed to 2 but passed a certificate of need change it had not promised.');
-  var lg=document.getElementById('legend');[['inplace','In place before the award'],['acted','Acted in 2026'],['committed','Committed, not yet confirmed'],['none','No commitment']].forEach(function(p){var k=h('span','chip '+p[0],null,lg);h('i',null,null,k);var s=h('span',null,p[1],k);s.style.display='inline';k.style.marginRight='14px';});
-  setText('src','Sources: CMS, Rural Health Transformation 50 State Spotlights; state applications (Texas HHSC, Arkansas); Mississippi Today; Rural Care Journey tracker. Status reflects public records, not CMS scoring, which is unpublished. Analysis: Kamen Partners.');
+  POL.forEach(function(p){var same=order.every(function(a){return usd?p.c[a][3]===p.c[order[0]][3]:p.c[a][0]===p.c[order[0]][0];});if(st.polFilter==='diff'&&same)return;
+    var r=h('tr',null,null,body),td=h('td','row',p.k,r);h('small',null,p.f+' · '+p.w,td);
+    order.forEach(function(a){var v=p.c[a],cell=h('td',null,null,r),node;
+      if(usd){if(v[3]==null){node=h('span','usd na','Not scored in Year 1',cell);}
+        else{node=h('span','usd',null,cell);var trk=h('span','trk',null,node),bar=h('b',null,null,trk);bar.style.width=(100*v[3]/7.27).toFixed(1)+'%';h('span',null,'$'+v[3].toFixed(2)+'M',node);}}
+      else{node=h('span','chip '+v[0],null,cell);h('i',null,null,node);h('span',null,v[1],node);}
+      node.setAttribute('tabindex',0);
+      function on(e){tipAt(e,function(t){h('h3',null,by[a].n,t);h('div','sub',p.k+' ('+p.f+')',t);h('div','big',v[1],t).style.fontSize='18px';
+        h('div','biglab',v[3]==null?'First counted in the Year 2 award':'$'+v[3].toFixed(2)+'M of the Year 1 award'+(p.f==='F.1'?', including initiative scoring':''),t);
+        var d=h('div',null,v[2],t);d.style.cssText='font-size:12.5px;color:var(--ink2);border-top:1px solid var(--rule);padding-top:8px;margin-top:8px;line-height:1.45';});}
+      node.addEventListener('pointermove',on);node.addEventListener('pointerleave',hideTip);node.addEventListener('focus',function(){var bx=node.getBoundingClientRect();on({clientX:bx.right,clientY:bx.top+bx.height/2});});node.addEventListener('blur',hideTip);});});
+  if(usd){setText('takeaway','Policy alone was worth $12 million to $16 million a year');
+    setText('note','CMS published what each policy factor earned each state in Year 1. Arkansas drew the most from its promises on compacts and scope of practice. Mississippi drew the least: its food waiver was still pending and its certificate of need rules ranked as stringent. The fitness test and nutrition training carried no money until Year 2.');}
+  else{setText('takeaway','Louisiana owed nothing at the cutoff. Mississippi was still waiting on its waiver');
+    setText('note','Two policies counted for the first time in Year 2: the school fitness test and nutrition training for physicians. Louisiana and Texas had nutrition training in law; Arkansas had only promised it and Mississippi had not. CMS counts policies in place and promises still owed as of Jul 31, 2026, shown under each state. It does not publish scores, so the link to award changes is inference.');
+    var lg=document.getElementById('legend');[['inplace','In place'],['partial','Partly in place'],['acted','Moved in 2026'],['committed','Promised, not done'],['none','Not in place, no promise']].forEach(function(q){var k=h('span','chip '+q[0],null,lg);h('i',null,null,k);var sp=h('span',null,q[1],k);sp.style.display='inline';k.style.marginRight='14px';});}
+  setText('src','Sources: CMS, RHTP State Snapshots (Year 1 funding by factor) and State Scorecards (policies as of Jul 31, 2026); CMS funding notice CMS-RHT-26-001; state applications (Texas HHSC, Louisiana LDH, Arkansas Governor’s office); USDA SNAP Food Restriction Waivers (updated Nov 3, 2026); Louisiana and Mississippi legislative records. Analysis: Kamen Partners.');
 }
 /* ---------- 5. timeline ---------- */
 function drawTime(){
   var W=940,lw=120,rh=62,top=46,order=['MS','TX','LA','AR'],H=top+order.length*rh+30,by={};F.forEach(function(s){by[s.a]=s;});
-  var t0=Date.parse('2026-03-15'),t1=Date.parse('2026-11-25');function X(d){return lw+(Date.parse(d)-t0)/(t1-t0)*(W-lw-20);}
-  var svg=el('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'Timeline of budget approvals and award announcements in 4 states, March to November 2026'},stage);
-  ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov'].forEach(function(m,i){var d='2026-'+('0'+(i+4)).slice(-2)+'-01',x=X(d);el('line',{x1:x,x2:x,y1:top-6,y2:H-26,stroke:css('--rule')},svg);var t=el('text',{x:x+6,y:H-10,'font-size':11.5},svg);t.textContent=m;});
+  var t0=Date.parse('2026-01-20'),t1=Date.parse('2026-11-25');function X(d){return lw+(Date.parse(d)-t0)/(t1-t0)*(W-lw-20);}
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'Timeline of budget approvals, policy actions and award announcements in 4 states, February to November 2026'},stage);
+  ['Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov'].forEach(function(m,i){var d='2026-'+('0'+(i+2)).slice(-2)+'-01',x=X(d);el('line',{x1:x,x2:x,y1:top-6,y2:H-26,stroke:css('--rule')},svg);var t=el('text',{x:x+6,y:H-10,'font-size':11.5},svg);t.textContent=m;});
   var cut=X('2026-07-31');el('rect',{x:lw,y:top-6,width:cut-lw,height:H-26-top+6,fill:css('--accent'),'fill-opacity':.06},svg);
   [['2026-07-31','Reporting cutoff, Jul 31','--accent'],['2026-10-30','Obligation deadline, Oct 30','--ink3']].forEach(function(p){var x=X(p[0]);el('line',{x1:x,x2:x,y1:20,y2:H-26,stroke:css(p[2]),'stroke-width':1.5,'stroke-dasharray':'5 4'},svg);var t=el('text',{x:x-6,y:16,'text-anchor':'end','font-size':12,'font-weight':600},svg);t.textContent=p[1];t.style.fill=css('--ink');});
   var ct=el('text',{x:lw+8,y:top+8,'font-size':11.5},svg);ct.textContent='Counted in the Year 2 score';
@@ -300,18 +357,19 @@ function drawTime(){
     el('line',{x1:lw,x2:W-20,y1:y,y2:y,stroke:css('--ink3'),'stroke-opacity':.5},svg);
     var nm=el('text',{x:lw-14,y:y-2,'text-anchor':'end','font-size':15,'font-weight':600},svg);nm.textContent=s.n;nm.style.fill=css('--ink');
     var sb=el('text',{x:lw-14,y:y+15,'text-anchor':'end','font-size':11.5,'font-weight':600},svg);sb.textContent=sgnM(s.chg);sb.style.fill=css(s.chg>=0?'--gain':'--loss');
-    EV.filter(function(e){return e.a===a;}).forEach(function(e){var x=X(e.d),r=e.big?9:6;
-      var n=el('circle',{cx:x,cy:y,r:r,fill:e.big?css('--hl'):css('--bg'),stroke:css('--hl'),'stroke-width':2,'class':'bar',tabindex:0,'aria-label':s.n+': '+e.t},svg);
-      if(e.approx)n.setAttribute('stroke-dasharray','3 2');
-      function on(ev){n.setAttribute('r',r+2);tipAt(ev,function(t){h('h3',null,e.t,t);var dt=new Date(e.d+'T12:00:00');h('div','sub',s.n+' · '+(e.approx?dt.toLocaleDateString('en-US',{month:'long',year:'numeric'}):dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})),t);if(e.x){var d=h('div',null,e.x,t);d.style.cssText='font-size:12.5px;color:var(--ink2);line-height:1.45';}});}
-      function off(){n.setAttribute('r',r);hideTip();}
+    EV.filter(function(e){return e.a===a;}).forEach(function(e){var x=X(e.d),r=e.pol?6:e.big?8:6,cy=e.pol?y-17:y,n;
+      if(e.pol){n=el('rect',{x:x-5.5,y:cy-5.5,width:11,height:11,transform:'rotate(45 '+x+' '+cy+')',fill:css('--accent'),stroke:css('--bg'),'stroke-width':1.5,'class':'bar',tabindex:0,'aria-label':s.n+': '+e.t},svg);}
+      else{n=el('circle',{cx:x,cy:cy,r:r,fill:e.big?css('--hl'):css('--bg'),stroke:e.big?css('--bg'):css('--hl'),'stroke-width':e.big?1.5:2,'class':'bar',tabindex:0,'aria-label':s.n+': '+e.t},svg);}
+      if(e.approx){n.setAttribute('stroke',css('--ink'));n.setAttribute('stroke-dasharray','3 2');}
+      function on(ev){if(!e.pol)n.setAttribute('r',r+2);tipAt(ev,function(t){h('h3',null,e.t,t);var dt=new Date(e.d+'T12:00:00');h('div','sub',s.n+' · '+(e.approx?dt.toLocaleDateString('en-US',{month:'long',year:'numeric'}):dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})),t);if(e.x){var d=h('div',null,e.x,t);d.style.cssText='font-size:12.5px;color:var(--ink2);line-height:1.45';}});}
+      function off(){if(!e.pol)n.setAttribute('r',r);hideTip();}
       n.addEventListener('pointermove',on);n.addEventListener('pointerleave',off);n.addEventListener('focus',function(){var b=n.getBoundingClientRect();on({clientX:b.left+b.width/2,clientY:b.top});});n.addEventListener('blur',off);});
   });
   setText('takeaway','Year 2 was scored before most awards were announced');
-  setText('note','CMS scored Year 2 on annual reports covering activity through Jul 31. Every dated award round in these 4 states came later. What CMS could see by the cutoff was setup: budgets approved, offices built, applications opened. Filled dots are award announcements; open dots are setup steps. Hover for detail.');
+  setText('note','CMS scored Year 2 on annual reports covering activity through Jul 31. Every dated award round in these 4 states came later. What CMS could see by the cutoff was setup and policy: budgets approved, offices built, applications opened, laws signed. Hover any marker for detail.');
   var lg=document.getElementById('legend');
-  [['Award announcement',true],['Setup milestone',false]].forEach(function(p){var k=h('span','key',null,lg),b=h('b',null,null,k);b.style.cssText='border:2px solid '+css('--hl')+';background:'+(p[1]?css('--hl'):'transparent')+';width:11px;height:11px';h('span',null,p[0],k);});
-  setText('src','Sources: Texas HHSC and TORCH; Louisiana Department of Health; Mississippi Today and Magnolia Tribune; Arkansas Advocate and Arkansas Business; Fierce Healthcare tracker; Rural Care Journey. Dashed outlines mark events dated to the month only. Analysis: Kamen Partners.');
+  [['Award announcement',1],['Setup milestone',0],['Policy action',2]].forEach(function(p){var k=h('span','key',null,lg),b=h('b',null,null,k);b.style.cssText=p[1]===2?'background:'+css('--accent')+';width:9px;height:9px;border-radius:0;transform:rotate(45deg)':'border:2px solid '+css('--hl')+';background:'+(p[1]?css('--hl'):'transparent')+';width:11px;height:11px';h('span',null,p[0],k);});
+  setText('src','Sources: Texas Governor’s office and HHSC; CMS press releases; Louisiana Department of Health; Louisiana and Mississippi legislative records; Mississippi Governor’s office via RHIhub; Arkansas Governor’s office and Department of Education. Dashed outlines mark events dated to the month only. Analysis: Kamen Partners.');
 }
 /* ---------- render ---------- */
 function render(){document.getElementById('controls').textContent='';clearStage();
@@ -321,7 +379,7 @@ function render(){document.getElementById('controls').textContent='';clearStage(
 }
 Array.prototype.forEach.call(root.querySelectorAll('[role=tab]'),function(b){b.addEventListener('click',function(){st.tab=b.getAttribute('data-tab');render();});});
 var q=new URLSearchParams(location.search),th=q.get('theme');
-if(th!=='light'&&th!=='dark')th=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';
+if(th!=='light'&&th!=='dark')th='light';
 if(q.get('tab')&&{paradox:1,mix:1,scatter:1,policy:1,time:1}[q.get('tab')])st.tab=q.get('tab');
 var tb=document.getElementById('themeBtn');
 function setTheme(t){root.setAttribute('data-theme',t);tb.textContent=t==='dark'?'Light':'Dark';document.body.style.background=q.get('bg')==='transparent'?'transparent':css('--bg');render();}

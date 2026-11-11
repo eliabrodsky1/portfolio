@@ -23,7 +23,7 @@ A 50-state explorer with a map, scatter plots of what does and does not drive aw
 
 ### Fast money, slow money: the Delta states and Texas
 
-Arkansas, Louisiana, Mississippi and Texas put their Year 1 money to work at very different speeds. The state that moved fastest lost ground in Year 2. Five views: the paradox, where the money went, the national comparison, policy promises and a timeline.
+Arkansas, Louisiana, Mississippi and Texas put their Year 1 money to work at very different speeds. The state that moved fastest lost ground in Year 2. Five views: the paradox, where the money went, the national comparison, a policy scorecard built from CMS records and a timeline.
 
 [![Delta states and Texas widget walkthrough](rhtp-widgets/rhtp-delta-demo.gif)](https://eliabrodsky1.github.io/portfolio/rhtp-widgets/rhtp-delta-states-explorer.html)
 
